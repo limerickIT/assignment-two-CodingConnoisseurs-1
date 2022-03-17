@@ -4,26 +4,20 @@
  */
 package com.sd4.controller;
 
-import com.sd4.model.Beer;
 import com.sd4.model.Brewery;
 import com.sd4.service.BeerService;
 import com.sd4.service.BreweryService;
-import java.awt.PageAttributes.MediaType;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
-//import org.springframework.hateoas.server.mvc.ControllerLinkBuilder;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-//import static org.sfw.hateoas.server.mvc.WebMvcLinkBuilder.*;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,16 +28,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import org.springframework.boot.configurationprocessor.json.JSONException;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  *
  * @author paw
  */
+//CHANGE TO SOMETHING DIFFERENT FROM BEER CONTROLLER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 @RestController
-@RequestMapping("/beers")
-public class BeerController {
+@RequestMapping("/brewery")
+public class BreweryController {
 
     @Autowired
     private BeerService beerService;
@@ -53,41 +49,41 @@ public class BeerController {
 
     //@GetMapping(value = "/hateoas/{id}", produces = { "application/hal+json" })
     @GetMapping(value = "/hateoas/{id}", produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<Beer> getOneWithHATEOAS(@PathVariable long id) {
-        Optional<Beer> o = beerService.findOne(id);
+    public ResponseEntity<Brewery> getOneWithHATEOAS(@PathVariable long id) {
+        Optional<Brewery> o = breweryService.findOne(id);
 
         if (!o.isPresent()) {
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         } else {
-            Link selfLink = linkTo(methodOn(BeerController.class)
-                    .getAll()).withRel("allBeers");
+            Link selfLink = linkTo(methodOn(BreweryController.class)
+                    .getAll()).withRel("allBreweries");
             o.get().add(selfLink);
             return ResponseEntity.ok(o.get());
         }
     }
 
     @GetMapping(value = "/hateoas/", produces = MediaTypes.HAL_JSON_VALUE)
-    public CollectionModel<Beer> getAllWithHATEOAS() {
+    public CollectionModel<Brewery> getAllWithHATEOAS() {
         //ADD RESPONSE ENTITY? WHEN LIST IS EMPTY
-        List<Beer> beerList = beerService.findAll();
-        for (final Beer b : beerList) {
+        List<Brewery> beerList = breweryService.findAll();
+        for (final Brewery b : beerList) {
             long id = b.getId();
-            Link selfLink = linkTo(BeerController.class).slash(id).withSelfRel();
+            Link selfLink = linkTo(BreweryController.class).slash(id).withSelfRel();
             b.add(selfLink);
-            Link beerDetails = linkTo(methodOn(BeerController.class)
-                    .getBeerDetails(id)).withRel("beerDetails");
+            Link beerDetails = linkTo(methodOn(BreweryController.class)
+                    .getBreweryDetails(id)).withRel("breweryDetails");
             b.add(beerDetails);
         }
 
         Link link = linkTo(BeerController.class).withSelfRel();
-        CollectionModel<Beer> result = CollectionModel.of(beerList, link);
+        CollectionModel<Brewery> result = CollectionModel.of(beerList, link);
         return result;
     }
 
     @GetMapping(value = "/details/{id}")
-    public ResponseEntity<String> getBeerDetails(@PathVariable long id) {
-        Optional<Beer> o = beerService.findOne(id);
-        long breweryId = o.get().getBrewery_id();
+    public ResponseEntity<String> getBreweryDetails(@PathVariable long id) {
+        Optional<Brewery> o = breweryService.findOne(id);
+        //long breweryId = o.get().getBrewery_id();
         //NO METHOD FROM BREWERY WORK HERE!!!!!!!!!!!!!!!!!!
         //Optional<Brewery> brewery = breweryService.findOne(breweryId);        
         JSONObject resp = new JSONObject();
@@ -102,15 +98,14 @@ public class BeerController {
         String details = "Name: " + o.get().getName() + " Description: " + o.get().getDescription();
         return ResponseEntity.ok(resp.toString());
     }
-
     @GetMapping("")
-    public List<Beer> getAll() {
-        return beerService.findAll();
+    public List<Brewery> getAll() {
+        return breweryService.findAll();
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<Beer> getOne(@PathVariable long id) {
-        Optional<Beer> o = beerService.findOne(id);
+    public ResponseEntity<Brewery> getOne(@PathVariable long id) {
+        Optional<Brewery> o = breweryService.findOne(id);
 
         if (!o.isPresent()) {
             return new ResponseEntity(HttpStatus.NOT_FOUND);
@@ -121,29 +116,24 @@ public class BeerController {
 
     @GetMapping("count")
     public long getCount() {
-        return beerService.count();
+        return breweryService.count();
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity delete(@PathVariable long id) {
-        beerService.deleteByID(id);
+        breweryService.deleteByID(id);
         return new ResponseEntity(HttpStatus.OK);
     }
 
     @PostMapping("")
-    public ResponseEntity add(@RequestBody Beer a) {
-        beerService.saveBeer(a);
+    public ResponseEntity add(@RequestBody Brewery a) {
+        breweryService.saveBrewery(a);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
     @PutMapping("")
-    public ResponseEntity edit(@RequestBody Beer a) { //the edit method should check if the Author object is already in the DB before attempting to save it.
-        beerService.saveBeer(a);
+    public ResponseEntity edit(@RequestBody Brewery a) { //the edit method should check if the Author object is already in the DB before attempting to save it.
+        breweryService.saveBrewery(a);
         return new ResponseEntity(HttpStatus.OK);
-    }
-    
-    @GetMapping("/brewery")
-    public List<Brewery> getAllBreweries() {
-        return breweryService.findAll();
     }
 }
