@@ -52,14 +52,17 @@ import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 
-//DOES NOT EXIST
-//import com.itextpdf.io.image.ImageData; 
-//import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.text.Image;
+//import com.itextpdf.layout.element.Image;
+import com.itextpdf.io.image.ImageData;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.FontFactory;
+//import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -70,6 +73,7 @@ import com.sd4.service.StyleService;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -95,12 +99,12 @@ public class BeerController {
     @Autowired
     private StyleService styleService;
 
-    @GetMapping(value = "/pdf/{id}", produces = org.springframework.http.MediaType.APPLICATION_PDF_VALUE)
-    public void getPdf(@PathVariable long id) throws FileNotFoundException, DocumentException {
+    @GetMapping(value = "/pdf/{id}/{size}", produces = org.springframework.http.MediaType.APPLICATION_PDF_VALUE)
+    public void getPdf(@PathVariable long id, @PathVariable String size) throws FileNotFoundException, DocumentException {
         Optional<Beer> o = beerService.findOne(id);
 
         Document document = new Document();
-        PdfWriter.getInstance(document, new FileOutputStream("Beer Poster.pdf"));
+        PdfWriter.getInstance(document, new FileOutputStream("src/main/resources/Beer Poster.pdf"));
         document.open();
         Font font = FontFactory.getFont(FontFactory.COURIER, 16, BaseColor.BLACK);
 
@@ -122,6 +126,7 @@ public class BeerController {
             String website = brewery.get().getWebsite();
             String categoryName = cat.get().getCat_name();
             String styleName = style.get().getStyle_name();
+            String image = o.get().getImage();
 
             Paragraph chunk1 = new Paragraph("Beer Name: " + beerName, font);
             Paragraph chunk2 = new Paragraph("ABV: " + abv, font);
@@ -131,6 +136,17 @@ public class BeerController {
             Paragraph chunk6 = new Paragraph("Brewery Website: " + website, font);
             Paragraph chunk7 = new Paragraph("Category: " + categoryName, font);
             Paragraph chunk8 = new Paragraph("Style: " + styleName, font);
+            //image
+            String imFile = "src/main/resources/static/assets/images/" + size + "/" + id + ".jpg";
+            //String imFile = "src/main/resources/static/assets/images/large/1.jpg";
+//            ImageData data;
+//            try {
+//                data = ImageDataFactory.create(imFile);
+//                Image imageFile = new Image(data);
+//                document.add(imageFile);
+//            } catch (MalformedURLException ex) {
+//                Logger.getLogger(BeerController.class.getName()).log(Level.SEVERE, null, ex);
+//            }
 
             document.add(chunk1);
             document.add(chunk2);
@@ -140,6 +156,16 @@ public class BeerController {
             document.add(chunk6);
             document.add(chunk7);
             document.add(chunk8);
+            Image img;
+            try {
+                img = Image.getInstance(imFile);
+//                document.add(new Paragraph("Sample 1: This is simple image demo."));
+                document.add(img);
+            } catch (BadElementException ex) {
+                Logger.getLogger(BeerController.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(BeerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
 
             //ADD IMAGE
         } else {
@@ -196,18 +222,19 @@ public class BeerController {
 //        }
     }
 
-@RequestMapping(value="/zip", produces="application/zip")
-public void zipFiles() throws FileNotFoundException, IOException {
-    String sourceFile = "src/main/resources/static/assets/images";
-        FileOutputStream fos = new FileOutputStream("beerImages.zip");
+    @RequestMapping(value = "/zip", produces = "application/zip")
+    public void zipFiles() throws FileNotFoundException, IOException {
+        String sourceFile = "src/main/resources/static/assets/images";
+        FileOutputStream fos = new FileOutputStream("src/main/resources/beerImages.zip");
         ZipOutputStream zipOut = new ZipOutputStream(fos);
         File fileToZip = new File(sourceFile);
 
         zipFile(fileToZip, fileToZip.getName(), zipOut);
         zipOut.close();
         fos.close();
-}
-private static void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
+    }
+
+    private static void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
         if (fileToZip.isHidden()) {
             return;
         }
@@ -235,7 +262,7 @@ private static void zipFile(File fileToZip, String fileName, ZipOutputStream zip
         }
         fis.close();
     }
-    
+
     //WORKING WITH ONE FILE
 //    @GetMapping(value = "/zip")
 //    public void getZip() throws IOException {
@@ -257,7 +284,6 @@ private static void zipFile(File fileToZip, String fileName, ZipOutputStream zip
 //        fos.close();
 //
 //    }
-    
     @GetMapping(value = "/image", produces = org.springframework.http.MediaType.IMAGE_JPEG_VALUE)
     public @ResponseBody
     byte[] getImage() throws IOException {
