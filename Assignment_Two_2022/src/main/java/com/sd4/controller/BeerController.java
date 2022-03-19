@@ -67,8 +67,13 @@ import com.sd4.model.Category;
 import com.sd4.model.Style;
 import com.sd4.service.CategoryService;
 import com.sd4.service.StyleService;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 /**
  *
@@ -191,6 +196,68 @@ public class BeerController {
 //        }
     }
 
+@RequestMapping(value="/zip", produces="application/zip")
+public void zipFiles() throws FileNotFoundException, IOException {
+    String sourceFile = "src/main/resources/static/assets/images";
+        FileOutputStream fos = new FileOutputStream("beerImages.zip");
+        ZipOutputStream zipOut = new ZipOutputStream(fos);
+        File fileToZip = new File(sourceFile);
+
+        zipFile(fileToZip, fileToZip.getName(), zipOut);
+        zipOut.close();
+        fos.close();
+}
+private static void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
+        if (fileToZip.isHidden()) {
+            return;
+        }
+        if (fileToZip.isDirectory()) {
+            if (fileName.endsWith("/")) {
+                zipOut.putNextEntry(new ZipEntry(fileName));
+                zipOut.closeEntry();
+            } else {
+                zipOut.putNextEntry(new ZipEntry(fileName + "/"));
+                zipOut.closeEntry();
+            }
+            File[] children = fileToZip.listFiles();
+            for (File childFile : children) {
+                zipFile(childFile, fileName + "/" + childFile.getName(), zipOut);
+            }
+            return;
+        }
+        FileInputStream fis = new FileInputStream(fileToZip);
+        ZipEntry zipEntry = new ZipEntry(fileName);
+        zipOut.putNextEntry(zipEntry);
+        byte[] bytes = new byte[1024];
+        int length;
+        while ((length = fis.read(bytes)) >= 0) {
+            zipOut.write(bytes, 0, length);
+        }
+        fis.close();
+    }
+    
+    //WORKING WITH ONE FILE
+//    @GetMapping(value = "/zip")
+//    public void getZip() throws IOException {
+//        System.out.println(getClass().getClassLoader().getResource("src/main/resources/static.assets.images.large/1.jpg"));
+//        String sourceFile = "src/main/resources/static/assets/images/large/1.jpg";
+//        FileOutputStream fos = new FileOutputStream("src/main/resources/compressed.zip");
+//        ZipOutputStream zipOut = new ZipOutputStream(fos);
+//        File fileToZip = new File(sourceFile);
+//        FileInputStream fis = new FileInputStream(fileToZip);   //GIVES ERROR
+//        ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
+//        zipOut.putNextEntry(zipEntry);
+//        byte[] bytes = new byte[1024];
+//        int length;
+//        while((length = fis.read(bytes)) >= 0) {
+//            zipOut.write(bytes, 0, length);
+//        }
+//        zipOut.close();
+//        fis.close();
+//        fos.close();
+//
+//    }
+    
     @GetMapping(value = "/image", produces = org.springframework.http.MediaType.IMAGE_JPEG_VALUE)
     public @ResponseBody
     byte[] getImage() throws IOException {
