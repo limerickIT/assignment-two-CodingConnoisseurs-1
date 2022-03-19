@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.hateoas.RepresentationModel;
 
 @Getter
 @Setter
@@ -20,10 +21,10 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 @Entity
-public class Style implements Serializable {
+public class Style extends RepresentationModel<Style> implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    private long id;
     private int cat_id;
     private String style_name;
 

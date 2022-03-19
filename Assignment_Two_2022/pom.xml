@@ -19,19 +19,38 @@
     </properties>
         
     <dependencies>
+        <!--next three for creating pdf-->
+        <dependency>
+    <groupId>com.itextpdf</groupId>
+    <artifactId>itextpdf</artifactId>
+    <version>5.5.13.3</version>
+</dependency>
+
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>2.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.56</version>
+        </dependency>
+
+
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <!--LATEST VERSIONS FOR HATEOAS FROM MAVEN REPOSITORY-->
-  <dependency>
-    <groupId>org.springframework.hateoas</groupId>
-    <artifactId>spring-hateoas</artifactId>
-    <scope>compile</scope>
-  </dependency>
+        <dependency>
+            <groupId>org.springframework.hateoas</groupId>
+            <artifactId>spring-hateoas</artifactId>
+            <scope>compile</scope>
+        </dependency>
  
-  <dependency>
-    <groupId>org.springframework.plugin</groupId>
-    <artifactId>spring-plugin-core</artifactId>
-    <version>2.0.0.RELEASE</version>
-</dependency>
+        <dependency>
+            <groupId>org.springframework.plugin</groupId>
+            <artifactId>spring-plugin-core</artifactId>
+            <version>2.0.0.RELEASE</version>
+        </dependency>
 
         <!--<dependency>
             <groupId>org.springframework.hateoas</groupId>
@@ -110,6 +129,18 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <version>2.2.6.RELEASE</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.11.0</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.htmlunit</groupId>
+            <artifactId>htmlunit</artifactId>
+            <version>2.36.0</version>
             <type>jar</type>
         </dependency>
     </dependencies>
