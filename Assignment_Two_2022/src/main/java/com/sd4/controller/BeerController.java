@@ -10,7 +10,8 @@ import com.sd4.model.Beer;
 import com.sd4.model.Brewery;
 import com.sd4.service.BeerService;
 import com.sd4.service.BreweryService;
-import java.awt.PageAttributes.MediaType;
+//import java.awt.PageAttributes.MediaType;
+import org.springframework.http.MediaType;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,10 +75,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import org.springframework.web.servlet.view.RedirectView;
 
 /**
  *
@@ -99,7 +103,9 @@ public class BeerController {
     @Autowired
     private StyleService styleService;
 
-    @GetMapping(value = "/pdf/{id}/{size}", produces = org.springframework.http.MediaType.APPLICATION_PDF_VALUE)
+
+    //REMOVE SIZE ATTRIBUTE
+    @GetMapping(value = "/pdf/{id}/{size}", produces = MediaType.APPLICATION_PDF_VALUE)
     public void getPdf(@PathVariable long id, @PathVariable String size) throws FileNotFoundException, DocumentException {
         Optional<Beer> o = beerService.findOne(id);
 
@@ -263,56 +269,46 @@ public class BeerController {
         fis.close();
     }
 
-    //WORKING WITH ONE FILE
-//    @GetMapping(value = "/zip")
-//    public void getZip() throws IOException {
-//        System.out.println(getClass().getClassLoader().getResource("src/main/resources/static.assets.images.large/1.jpg"));
-//        String sourceFile = "src/main/resources/static/assets/images/large/1.jpg";
-//        FileOutputStream fos = new FileOutputStream("src/main/resources/compressed.zip");
-//        ZipOutputStream zipOut = new ZipOutputStream(fos);
-//        File fileToZip = new File(sourceFile);
-//        FileInputStream fis = new FileInputStream(fileToZip);   //GIVES ERROR
-//        ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
-//        zipOut.putNextEntry(zipEntry);
-//        byte[] bytes = new byte[1024];
-//        int length;
-//        while((length = fis.read(bytes)) >= 0) {
-//            zipOut.write(bytes, 0, length);
-//        }
-//        zipOut.close();
-//        fis.close();
-//        fos.close();
-//
-//    }
-    @GetMapping(value = "/image", produces = org.springframework.http.MediaType.IMAGE_JPEG_VALUE)
-    public @ResponseBody
-    byte[] getImage() throws IOException {
 
-        String path = new ClassPathResource("/src/main/resources/static.assets.images.thumbs/1.jpg").toString();
-        InputStream in = getClass()
-                .getResourceAsStream("/src/main/resources/static.assets.images.thumbs/1.jpg");
-        return IOUtils.toByteArray(in);
-
-    }
-
-//    @GetMapping(value = "/image", produces = MediaTypes.HAL_JSON_VALUE)
-//    public ResponseEntity<Beer> getImage() throws IOException {
+    @GetMapping(value = "/image", produces = MediaType.IMAGE_JPEG_VALUE)
+    public byte[] getImage() throws IOException {
 //        long id = 1;
 //        Optional<Beer> o = beerService.findOne(id);
 ////        String path = "src/main/resources/static.assets.images.large/";
 ////        if(type == "thumb"){
 ////            path = "src/main/resources/static.assets.images.thumbs/";
 ////        }
-//String path = new ClassPathResource("/src/main/resources/static.assets.images.thumbs/1.jpg").toString();
+//        String path = new ClassPathResource("src/main/resources/static/assets/images/thumbs/1.jpg").toString();
 //        String resource = new ClassPathResource("1.jpg").toString();
 //        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
 //        //String path = Thread.currentThread().getContextClassLoader().toString();
-//         System.out.println(path);
+//        System.out.println(path);
 //        InputStream in = classloader.getResourceAsStream("1.jpg");
-//    return ResponseEntity.ok(o.get());
-//
-//
-//    }
+//        return IOUtils.toByteArray(in);
+        InputStream in = getClass()
+                .getResourceAsStream("src/main/resources/static/assets/images/thumbs/1.jpg");
+        return IOUtils.toByteArray(in);
+    }
+
+    @RequestMapping(value = "/image2", produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<byte[]> getImage2() throws IOException {
+
+        var imgFile = new ClassPathResource("src/main/resources/static/assets/images/thumbs/1.j");
+        byte[] bytes = StreamUtils.copyToByteArray(imgFile.getInputStream());
+
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.IMAGE_JPEG)
+                .body(bytes);
+    }
+
+    @GetMapping(value = "/get-image-with-media-type", produces = org.springframework.http.MediaType.IMAGE_JPEG_VALUE)
+    public @ResponseBody
+    byte[] getImageWithMediaType() throws IOException {
+        final InputStream in = getClass().getResourceAsStream("src/main/resources/static/assets/images/thumbs/1.jpg");
+        return IOUtils.toByteArray(in);
+    }
+
     //@GetMapping(value = "/hateoas/{id}", produces = { "application/hal+json" })
     @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     public ResponseEntity<Beer> getOneWithHATEOAS(@PathVariable long id) {
@@ -368,20 +364,7 @@ public class BeerController {
         return ResponseEntity.ok(resp.toString());
     }
 
-//    @GetMapping("")
-//    public List<Beer> getAll() {
-//        return beerService.findAll();
-//    }
-//    @GetMapping("{id}")
-//    public ResponseEntity<Beer> getOne(@PathVariable long id) {
-//        Optional<Beer> o = beerService.findOne(id);
-//
-//        if (!o.isPresent()) {
-//            return new ResponseEntity(HttpStatus.NOT_FOUND);
-//        } else {
-//            return ResponseEntity.ok(o.get());
-//        }
-//    }
+
     @GetMapping("count")
     public long getCount() {
         return beerService.count();
@@ -409,4 +392,68 @@ public class BeerController {
     public List<Brewery> getAllBreweries() {
         return breweryService.findAll();
     }
+    
+    //    @GetMapping("")
+//    public List<Beer> getAll() {
+//        return beerService.findAll();
+//    }
+//    @GetMapping("{id}")
+//    public ResponseEntity<Beer> getOne(@PathVariable long id) {
+//        Optional<Beer> o = beerService.findOne(id);
+//
+//        if (!o.isPresent()) {
+//            return new ResponseEntity(HttpStatus.NOT_FOUND);
+//        } else {
+//            return ResponseEntity.ok(o.get());
+//        }
+//    }
+    
+    //    @RequestMapping(value = "/redirect1")
+//    public RedirectView redirect1() {
+//
+////        RedirectView redirectView = new RedirectView();
+////        redirectView.setUrl("https://www.google.com/");
+////
+////        return redirectView;
+//        return new RedirectView("https://www.google.com/");
+//
+//    }
+//
+//    @PostMapping(value = "/redirect")
+//    public ResponseEntity<Void> redirect() {
+//
+//        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create("https://www.google.com/")).build();
+//    }
+    
+        //WORKING WITH ONE FILE
+//    @GetMapping(value = "/zip")
+//    public void getZip() throws IOException {
+//        System.out.println(getClass().getClassLoader().getResource("src/main/resources/static.assets.images.large/1.jpg"));
+//        String sourceFile = "src/main/resources/static/assets/images/large/1.jpg";
+//        FileOutputStream fos = new FileOutputStream("src/main/resources/compressed.zip");
+//        ZipOutputStream zipOut = new ZipOutputStream(fos);
+//        File fileToZip = new File(sourceFile);
+//        FileInputStream fis = new FileInputStream(fileToZip);   //GIVES ERROR
+//        ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
+//        zipOut.putNextEntry(zipEntry);
+//        byte[] bytes = new byte[1024];
+//        int length;
+//        while((length = fis.read(bytes)) >= 0) {
+//            zipOut.write(bytes, 0, length);
+//        }
+//        zipOut.close();
+//        fis.close();
+//        fos.close();
+//
+//    }
+//    @GetMapping(value = "/image", produces = org.springframework.http.MediaType.IMAGE_JPEG_VALUE)
+//    public @ResponseBody
+//    byte[] getImage() throws IOException {
+//
+//        //String path = new ClassPathResource("src/main/resources/static/assets/images/thumbs/1.jpg").toString();
+//        InputStream in = getClass()
+//                .getResourceAsStream("src/main/resources/static/assets/images/thumbs/1.jpg");
+//        return IOUtils.toByteArray(in);
+//
+//    }
 }

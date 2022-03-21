@@ -60,8 +60,7 @@ import javax.swing.*;
 //import javax.swing.JFrame; 
 //import javax.swing.SwingUtilities;
 import java.awt.*;
-
-   
+import org.springframework.web.servlet.view.RedirectView;
 
 /**
  *
@@ -81,63 +80,21 @@ public class BreweryController {
     @Autowired
     private Breweries_GeocodeService breweries_GeocodeService;
 
-//    @GetMapping(value = "/map/{id}", produces = MediaTypes.HAL_JSON_VALUE)
-//    public ResponseEntity<Brewery> getLocation(@PathVariable long id) {
-//        Optional<Brewery> o = breweryService.findOne(id);
+    @RequestMapping(value = "/redirect1")
+    public RedirectView redirect1() {
+
+        RedirectView redirectView = new RedirectView("https://www.google.com/maps/place/52.6515619,-8.6651593");
+        //redirectView.setUrl("https://www.google.com/maps/place/52.6515619,-8.6651593");
+
 //
-//        String map = "map";
-//        Link link = Link.of("https://www.google.com/maps/place/52.6515619,-8.6651593");
-//        o.get().add(link);
-//        return ResponseEntity.ok(o.get());
-//
-//    }
-//    @GetMapping(value = "/loc/{id}")
-//    public void getLoc(@PathVariable long id) {
-//        //Optional<Brewery> o = breweryService.findOne(id);
-//
-//        JFrame jFrame = new JFrame("Hello World Swing Example");
-//        jFrame.setLayout(new FlowLayout());
-//        jFrame.setSize(500, 360);
-//        jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//
-//
-//        JLabel label = new JLabel("Hello World Swing");
-//        Border border = BorderFactory.createLineBorder(Color.BLACK);
-//        label.setBorder(border);
-//        label.setPreferredSize(new Dimension(150, 100));
-//
-//        label.setText("Hello World Swing");
-//        label.setHorizontalAlignment(JLabel.CENTER);
-//        label.setVerticalAlignment(JLabel.CENTER);
-//
-//        jFrame.add(label);
-//        jFrame.setVisible(true);
-//
-//    }
-//    @GetMapping(value = "/loc/{id}")
-//    public void getLoc(@PathVariable long id) {
-//        //Optional<Brewery> o = breweryService.findOne(id);
-//
-//                JEditorPane editor = new JEditorPane();
-//        editor.setEditable(false);   
-//        try {
-//            editor.setPage("http://www.java2s.com/Code/Java/Swing-JFC/CreateasimplebrowserinSwing.htm");
-//        }catch (IOException e) {
-//            editor.setContentType("https://www.google.com/");
-//            editor.setText("Page could not load");
-//        }
-// 
-//        JScrollPane scrollPane = new JScrollPane(editor);     
-//        JFrame f = new JFrame("Display example.com web page");
-//        f.getContentPane().add(scrollPane);
-//        f.setSize(700,400);
-//        f.setVisible(true);
-//        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//
-//    }
+        return redirectView;
+//        return new RedirectView("https://www.google.com/maps/place/52.6515619,-8.6651593");
+
+    }
+
     @GetMapping(value = "/loc/{id}")
     public void getLoc(@PathVariable long id) throws IOException {
-         JFrame  myFrame = new JFrame();  
+        JFrame myFrame = new JFrame();
 //        myFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  
 //        myFrame.setSize(400, 200);  
 //        JEditorPane myPane = new JEditorPane();  
@@ -148,7 +105,6 @@ public class BreweryController {
 //        myFrame.setContentPane(myPane);  
 //        myFrame.setVisible(true);        
 
-
 //        Optional<Brewery> o = breweryService.findOne(id);
 //        JEditorPane website = new JEditorPane("http://smo-gram.tumblr.com/");
 //        website.setEditable(false);
@@ -157,8 +113,6 @@ public class BreweryController {
 //        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 //        frame.setSize(800, 600);
 //        frame.setVisible(true);
-
-
 //         Browser browser = BrowserFactory.create();
 //    JFrame frame = new JFrame("Google Map");
 //    frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -287,4 +241,58 @@ public class BreweryController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
+    //    @GetMapping(value = "/map/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+//    public ResponseEntity<Brewery> getLocation(@PathVariable long id) {
+//        Optional<Brewery> o = breweryService.findOne(id);
+//
+//        String map = "map";
+//        Link link = Link.of("https://www.google.com/maps/place/52.6515619,-8.6651593");
+//        o.get().add(link);
+//        return ResponseEntity.ok(o.get());
+//
+//    }
+//    @GetMapping(value = "/loc/{id}")
+//    public void getLoc(@PathVariable long id) {
+//        //Optional<Brewery> o = breweryService.findOne(id);
+//
+//        JFrame jFrame = new JFrame("Hello World Swing Example");
+//        jFrame.setLayout(new FlowLayout());
+//        jFrame.setSize(500, 360);
+//        jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//
+//
+//        JLabel label = new JLabel("Hello World Swing");
+//        Border border = BorderFactory.createLineBorder(Color.BLACK);
+//        label.setBorder(border);
+//        label.setPreferredSize(new Dimension(150, 100));
+//
+//        label.setText("Hello World Swing");
+//        label.setHorizontalAlignment(JLabel.CENTER);
+//        label.setVerticalAlignment(JLabel.CENTER);
+//
+//        jFrame.add(label);
+//        jFrame.setVisible(true);
+//
+//    }
+//    @GetMapping(value = "/loc/{id}")
+//    public void getLoc(@PathVariable long id) {
+//        //Optional<Brewery> o = breweryService.findOne(id);
+//
+//                JEditorPane editor = new JEditorPane();
+//        editor.setEditable(false);   
+//        try {
+//            editor.setPage("http://www.java2s.com/Code/Java/Swing-JFC/CreateasimplebrowserinSwing.htm");
+//        }catch (IOException e) {
+//            editor.setContentType("https://www.google.com/");
+//            editor.setText("Page could not load");
+//        }
+// 
+//        JScrollPane scrollPane = new JScrollPane(editor);     
+//        JFrame f = new JFrame("Display example.com web page");
+//        f.getContentPane().add(scrollPane);
+//        f.setSize(700,400);
+//        f.setVisible(true);
+//        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//
+//    }
 }
