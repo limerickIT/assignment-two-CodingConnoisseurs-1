@@ -61,7 +61,16 @@ import javax.swing.*;
 //import javax.swing.JFrame; 
 //import javax.swing.SwingUtilities;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import org.springframework.web.servlet.view.RedirectView;
+
+//QR 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageConfig;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 
 /**
  *
@@ -80,9 +89,23 @@ public class BreweryController {
 
     @Autowired
     private Breweries_GeocodeService breweries_GeocodeService;
-    
 
-    
+    @GetMapping(path = "/generateQR", produces = MediaType.IMAGE_PNG_VALUE)
+    public BufferedImage generateQR() throws WriterException {
+        String barcodeText = "Something";
+//        QRCodeWriter barcodeWriter = new QRCodeWriter();
+//        BitMatrix bitMatrix
+//                = barcodeWriter.encode(barcodeText, BarcodeFormat.QR_CODE, 200, 200);
+//
+//        return MatrixToImageWriter.toBufferedImage(bitMatrix);
+
+        //QRcode generator logic
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(barcodeText, BarcodeFormat.QR_CODE, 250, 250);
+        return MatrixToImageWriter.toBufferedImage(bitMatrix);
+
+    }
+
     @RequestMapping(value = "/iFrameMap/{id}", produces = MediaType.TEXT_HTML_VALUE)
     public String mapiFrameView(@PathVariable long id) {
         Optional<Brewery> o = breweryService.findOne(id);
@@ -93,12 +116,12 @@ public class BreweryController {
         if (!o.isPresent()) {
             breweryAddress = "No brewery with this address exists.";
         } else {
-            
+
             Optional<Breweries_Geocode> breweriesGeocode = breweries_GeocodeService.findOne(Long.valueOf(id));
-            breweryAddress = o.get().getName() + " " + o.get().getAddress1()+ " " + o.get().getAddress2()+ " "  + o.get().getCity() + " " + o.get().getState() + " " + o.get().getCode() + " " + o.get().getCountry();
-            if (!breweriesGeocode.isPresent()){
+            breweryAddress = o.get().getName() + " " + o.get().getAddress1() + " " + o.get().getAddress2() + " " + o.get().getCity() + " " + o.get().getState() + " " + o.get().getCode() + " " + o.get().getCountry();
+            if (!breweriesGeocode.isPresent()) {
                 webPage = " <p>" + breweryAddress + "</p><p>There is no map to be displayed due to lack of coordinates</p>";
-            }else{
+            } else {
                 lattitude = breweriesGeocode.get().getLatitude();
                 longitude = breweriesGeocode.get().getLongitude().toString();
                 webPage = " <p>" + breweryAddress + "</p><iframe width=\"100%\" height=\"100%\" src=\"https://www.google.com/maps/place/" + lattitude + "," + longitude + "\" title=\"W3Schools Free Online Web Tutorials\"></iframe> ";

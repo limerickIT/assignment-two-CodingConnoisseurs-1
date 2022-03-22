@@ -105,15 +105,10 @@ public class BeerController {
     @Autowired
     private StyleService styleService;
     
-    //DOES NOT WORK YET!!!!!!
     @GetMapping(value = "/images", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<BufferedImage> getBeerImage() throws IOException {
 
-        String path = "src/main/resources/static/assets/images/thumbs/1.jpg";
-////        InputStream in = getClass()
-////                .getResourceAsStream("static/assets/images/thumbs/1.jpg");
-//        InputStream in = new ClassPathResource(path).getInputStream();
-//        File file = new File("src\\main\\resources\\static\\assets\\images\\thumbs\\1.jpg");
+        String path = "src/main/resources/static/assets/images/thumbs/1.jpg"; 
         BufferedImage image = ImageIO.read(new File(path));
         return ResponseEntity.ok(image);
 
