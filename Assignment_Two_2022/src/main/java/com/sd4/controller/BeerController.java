@@ -71,6 +71,7 @@ import com.sd4.model.Category;
 import com.sd4.model.Style;
 import com.sd4.service.CategoryService;
 import com.sd4.service.StyleService;
+import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -79,6 +80,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import javax.imageio.ImageIO;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.web.servlet.view.RedirectView;
@@ -102,6 +104,20 @@ public class BeerController {
 
     @Autowired
     private StyleService styleService;
+    
+    //DOES NOT WORK YET!!!!!!
+    @GetMapping(value = "/images", produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<BufferedImage> getBeerImage() throws IOException {
+
+        String path = "src/main/resources/static/assets/images/thumbs/1.jpg";
+////        InputStream in = getClass()
+////                .getResourceAsStream("static/assets/images/thumbs/1.jpg");
+//        InputStream in = new ClassPathResource(path).getInputStream();
+//        File file = new File("src\\main\\resources\\static\\assets\\images\\thumbs\\1.jpg");
+        BufferedImage image = ImageIO.read(new File(path));
+        return ResponseEntity.ok(image);
+
+    }
 
 
     //REMOVE SIZE ATTRIBUTE

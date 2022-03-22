@@ -5,6 +5,7 @@
 package com.sd4.controller;
 
 import com.sd4.model.Beer;
+import com.sd4.model.Breweries_Geocode;
 import com.sd4.model.Brewery;
 import com.sd4.service.BeerService;
 import com.sd4.service.Breweries_GeocodeService;
@@ -79,16 +80,42 @@ public class BreweryController {
 
     @Autowired
     private Breweries_GeocodeService breweries_GeocodeService;
+    
 
-    @RequestMapping(value = "/redirect1")
-    public RedirectView redirect1() {
+    
+    @RequestMapping(value = "/iFrameMap/{id}", produces = MediaType.TEXT_HTML_VALUE)
+    public String mapiFrameView(@PathVariable long id) {
+        Optional<Brewery> o = breweryService.findOne(id);
+        String breweryAddress = "";
+        String webPage = "";
+        Double lattitude;
+        String longitude = "";
+        if (!o.isPresent()) {
+            breweryAddress = "No brewery with this address exists.";
+        } else {
+            
+            Optional<Breweries_Geocode> breweriesGeocode = breweries_GeocodeService.findOne(Long.valueOf(id));
+            breweryAddress = o.get().getName() + " " + o.get().getAddress1()+ " " + o.get().getAddress2()+ " "  + o.get().getCity() + " " + o.get().getState() + " " + o.get().getCode() + " " + o.get().getCountry();
+            if (!breweriesGeocode.isPresent()){
+                webPage = " <p>" + breweryAddress + "</p><p>There is no map to be displayed due to lack of coordinates</p>";
+            }else{
+                lattitude = breweriesGeocode.get().getLatitude();
+                longitude = breweriesGeocode.get().getLongitude().toString();
+                webPage = " <p>" + breweryAddress + "</p><iframe width=\"100%\" height=\"100%\" src=\"https://www.google.com/maps/place/" + lattitude + "," + longitude + "\" title=\"W3Schools Free Online Web Tutorials\"></iframe> ";
+            }
+
+        }
+
+        return webPage;
+
+    }
+
+    @RequestMapping(value = "/redirectMap")
+    public RedirectView mapRedirectView() {
 
         RedirectView redirectView = new RedirectView("https://www.google.com/maps/place/52.6515619,-8.6651593");
-        //redirectView.setUrl("https://www.google.com/maps/place/52.6515619,-8.6651593");
 
-//
         return redirectView;
-//        return new RedirectView("https://www.google.com/maps/place/52.6515619,-8.6651593");
 
     }
 
