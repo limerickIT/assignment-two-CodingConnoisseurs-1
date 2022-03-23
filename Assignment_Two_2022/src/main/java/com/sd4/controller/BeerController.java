@@ -85,6 +85,12 @@ import org.springframework.util.StreamUtils;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.web.servlet.view.RedirectView;
 
+//Pagination
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedModel;
 /**
  *
  * @author paw
@@ -104,6 +110,9 @@ public class BeerController {
 
     @Autowired
     private StyleService styleService;
+    
+    @Autowired
+  private PagedResourcesAssembler<Beer> pagedResourcesAssembler;
 
     @GetMapping(value = "/images/{id}/{imageSize}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<BufferedImage> getBeerImage(@PathVariable long id, @PathVariable String imageSize) throws IOException {
@@ -323,7 +332,25 @@ public class BeerController {
             return ResponseEntity.ok(o.get());
         }
     }
+    //with Pagination
+    @GetMapping(value = "/allBeers", produces = MediaTypes.HAL_JSON_VALUE)
+    public CollectionModel<Beer> getAllBeers(Pageable pageable) {
+        Page<Beer> beerList = (Page<Beer>) beerService.findAll();
+        for (final Beer b : beerList) {
+            long id = b.getId();
+            Link selfLink = linkTo(BeerController.class).slash(id).withSelfRel();
+            b.add(selfLink);
+            Link beerDetails = linkTo(methodOn(BeerController.class)
+                    .getBeerDetails(id)).withRel("beerDetails");
+            b.add(beerDetails);
+        }
 
+        Link link = linkTo(BeerController.class).withSelfRel();
+        Page result1 = (Page) CollectionModel.of(beerList, link);
+        CollectionModel<Beer> result = CollectionModel.of(beerList, link);
+        return result;
+    }
+    
     @GetMapping(value = "/all", produces = MediaTypes.HAL_JSON_VALUE)
     public CollectionModel<Beer> getAll() {
         //ADD RESPONSE ENTITY? WHEN LIST IS EMPTY

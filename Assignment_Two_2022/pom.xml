@@ -19,6 +19,11 @@
     </properties>
         
     <dependencies>
+        <!--XML-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+        </dependency>
         <!--QR-->
         <dependency>
             <groupId>com.google.zxing</groupId>

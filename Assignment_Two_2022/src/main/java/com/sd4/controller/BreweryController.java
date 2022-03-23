@@ -216,7 +216,7 @@ public class BreweryController {
         }
     }
 
-    @GetMapping(value = "/hateoas/", produces = MediaTypes.HAL_JSON_VALUE)
+    @GetMapping(value = "/hateoas", produces = MediaType.APPLICATION_XML_VALUE)
     public CollectionModel<Brewery> getAllWithHATEOAS() {
         //ADD RESPONSE ENTITY? WHEN LIST IS EMPTY
         List<Brewery> beerList = breweryService.findAll();
