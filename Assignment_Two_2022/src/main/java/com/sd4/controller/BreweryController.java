@@ -92,14 +92,23 @@ public class BreweryController {
 
     @GetMapping(path = "/generateQR", produces = MediaType.IMAGE_PNG_VALUE)
     public BufferedImage generateQR() throws WriterException {
-        String barcodeText = "Something";
-//        QRCodeWriter barcodeWriter = new QRCodeWriter();
-//        BitMatrix bitMatrix
-//                = barcodeWriter.encode(barcodeText, BarcodeFormat.QR_CODE, 200, 200);
-//
-//        return MatrixToImageWriter.toBufferedImage(bitMatrix);
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("BEGIN:VCARD");
+        buffer.append("\nFN:").append("AAAA");
 
-        //QRcode generator logic
+        buffer.append("\nADR;TYPE=pref:").append("Address");
+
+        buffer.append("\nLABEL;TYPE=pref:").append("No");
+
+        buffer.append("\nTEL;TYPE=work:").append("13699998888");
+        buffer.append("\nURL:").append("www.test.com");
+
+        buffer.append("\nEMAIL;TYPE=pref:").append("777777777@qq.com");
+
+        buffer.append("\nEND:VCARD");
+        
+        String barcodeText = buffer.toString();
+        
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
         BitMatrix bitMatrix = qrCodeWriter.encode(barcodeText, BarcodeFormat.QR_CODE, 250, 250);
         return MatrixToImageWriter.toBufferedImage(bitMatrix);
