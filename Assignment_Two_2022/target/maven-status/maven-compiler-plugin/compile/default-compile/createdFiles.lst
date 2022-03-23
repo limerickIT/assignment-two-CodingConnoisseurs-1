@@ -7,7 +7,6 @@ com\sd4\model\Category.class
 com\sd4\model\Breweries_Geocode.class
 com\sd4\service\CategoryService.class
 com\sd4\model\Style.class
-com\sd4\controller\BeerController.class
 com\sd4\repository\Breweries_GeocodeRepository.class
 com\sd4\repository\StyleRepository.class
 com\sd4\repository\BreweryRepository.class

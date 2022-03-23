@@ -57,9 +57,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
 import javax.swing.*;
-//import javax.swing.JEditorPane;  
-//import javax.swing.JFrame; 
-//import javax.swing.SwingUtilities;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import org.springframework.web.servlet.view.RedirectView;
@@ -100,7 +98,7 @@ public class BreweryController {
         String website = "";
         
         if (!o.isPresent()) {
-            //breweryAddress = "No brewery with this address exists.";
+            //return error
         } else {
             name = o.get().getName();
             address = o.get().getName() + " " + o.get().getAddress1() + " " + o.get().getAddress2() + " " + o.get().getCity() + " " + o.get().getState() + " " + o.get().getCode() + " " + o.get().getCountry();
@@ -127,9 +125,9 @@ public class BreweryController {
 
     }
 
-    @RequestMapping(value = "/iFrameMap/{id}", produces = MediaType.TEXT_HTML_VALUE)
-    public String mapiFrameView(@PathVariable long id) {
-        Optional<Brewery> o = breweryService.findOne(id);
+    @RequestMapping(value = "/iFrameMap/{breweryId}", produces = MediaType.TEXT_HTML_VALUE)
+    public String mapiFrameView(@PathVariable long breweryId) {
+        Optional<Brewery> o = breweryService.findOne(breweryId);
         String breweryAddress = "";
         String webPage = "";
         Double lattitude;
@@ -138,7 +136,7 @@ public class BreweryController {
             breweryAddress = "No brewery with this address exists.";
         } else {
 
-            Optional<Breweries_Geocode> breweriesGeocode = breweries_GeocodeService.findOne(Long.valueOf(id));
+            Optional<Breweries_Geocode> breweriesGeocode = breweries_GeocodeService.findOne(Long.valueOf(breweryId));
             breweryAddress = o.get().getName() + " " + o.get().getAddress1() + " " + o.get().getAddress2() + " " + o.get().getCity() + " " + o.get().getState() + " " + o.get().getCode() + " " + o.get().getCountry();
             if (!breweriesGeocode.isPresent()) {
                 webPage = " <p>" + breweryAddress + "</p><p>There is no map to be displayed due to lack of coordinates</p>";
@@ -163,70 +161,31 @@ public class BreweryController {
 
     }
 
-    @GetMapping(value = "/loc/{id}")
-    public void getLoc(@PathVariable long id) throws IOException {
-        JFrame myFrame = new JFrame();
-//        myFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  
-//        myFrame.setSize(400, 200);  
-//        JEditorPane myPane = new JEditorPane();  
-//        myPane.setContentType("text/plain");  
-//        myPane.setText("Sleeping is necessary for a healthy body."  
-//                + " But sleeping in unnecessary times may spoil our health, wealth and studies."  
-//                + " Doctors advise that the sleeping at improper timings may lead for obesity during the students days.");  
-//        myFrame.setContentPane(myPane);  
-//        myFrame.setVisible(true);        
-
-//        Optional<Brewery> o = breweryService.findOne(id);
-//        JEditorPane website = new JEditorPane("http://smo-gram.tumblr.com/");
-//        website.setEditable(false);
-//        JFrame frame = new JFrame("Google");
-//        frame.add(new JScrollPane(website));
-//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        frame.setSize(800, 600);
-//        frame.setVisible(true);
-//         Browser browser = BrowserFactory.create();
-//    JFrame frame = new JFrame("Google Map");
-//    frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-//    frame.add(browser.getView().getComponent(), BorderLayout.CENTER);
-//    frame.setSize(600, 400);
-//    frame.setLocationRelativeTo(null);
-//    frame.setVisible(true);
-//    browser.loadURL("http://maps.google.com");
-    }
-
-    private ResponseEntity<Brewery> getBreweryLoc(long id) {
-        Optional<Brewery> o = breweryService.findOne(id);
-        Link link = Link.of("https://www.google.com/maps/place/52.6515619,-8.6651593");
-        o.get().add(link);
-        return ResponseEntity.ok(o.get());
-    }
-
-    //@GetMapping(value = "/hateoas/{id}", produces = { "application/hal+json" })
-    @GetMapping(value = "/hateoas/{id}", produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<Brewery> getOneWithHATEOAS(@PathVariable long id) {
-        Optional<Brewery> o = breweryService.findOne(id);
+    @GetMapping(value = "/{breweryId}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<Brewery> getOneBrewery(@PathVariable long breweryId) {
+        Optional<Brewery> o = breweryService.findOne(breweryId);
 
         if (!o.isPresent()) {
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         } else {
             Link selfLink = linkTo(methodOn(BreweryController.class)
-                    .getAll()).withRel("allBreweries");
+                    .getAllBreweries()).withRel("allBreweries");
             o.get().add(selfLink);
             return ResponseEntity.ok(o.get());
         }
     }
 
-    @GetMapping(value = "/hateoas", produces = MediaType.APPLICATION_XML_VALUE)
-    public CollectionModel<Brewery> getAllWithHATEOAS() {
+    @GetMapping(value = "/allBreweries", produces = MediaType.APPLICATION_XML_VALUE)
+    public CollectionModel<Brewery> getAllBreweries() {
         //ADD RESPONSE ENTITY? WHEN LIST IS EMPTY
         List<Brewery> beerList = breweryService.findAll();
         for (final Brewery b : beerList) {
             long id = b.getId();
             Link selfLink = linkTo(BreweryController.class).slash(id).withSelfRel();
             b.add(selfLink);
-            Link beerDetails = linkTo(methodOn(BreweryController.class)
+            Link link = linkTo(methodOn(BreweryController.class)
                     .getBreweryDetails(id)).withRel("breweryDetails");
-            b.add(beerDetails);
+            b.add(link);
         }
 
         Link link = linkTo(BeerController.class).withSelfRel();
@@ -235,31 +194,28 @@ public class BreweryController {
     }
 
     //get all beers by the brewery
-    @GetMapping(value = "/beers/{id}", produces = MediaTypes.HAL_JSON_VALUE)
-    public CollectionModel<Beer> getBeersByBrewery(@PathVariable long id) {
-        Optional<Brewery> o = breweryService.findOne(id);
+    @GetMapping(value = "/breweryBeers/{breweryId}", produces = MediaTypes.HAL_JSON_VALUE)
+    public CollectionModel<Beer> getBeersByBrewery(@PathVariable long breweryId) {
+        Optional<Brewery> o = breweryService.findOne(breweryId);
         List<Beer> beerListBrewery = new ArrayList();
 
         List<Beer> beerList = beerService.findAll();
         for (final Beer b : beerList) {
-            if (b.getBrewery_id() == id) {
+            if (b.getBrewery_id() == breweryId) {
                 beerListBrewery.add(b);
             }
         }
-        Link selfLink = linkTo(methodOn(BreweryController.class)
-                .getAll()).withRel("allBreweries");
-        o.get().add(selfLink);
-        CollectionModel<Beer> result = CollectionModel.of(beerListBrewery);
+        Link link = linkTo(methodOn(BreweryController.class)
+                .getAllBreweries()).withRel("allBreweries");
+        o.get().add(link);
+        CollectionModel<Beer> result = CollectionModel.of(beerListBrewery, link);
         return result;
 
     }
 
-    @GetMapping(value = "/details/{id}")
-    public ResponseEntity<String> getBreweryDetails(@PathVariable long id) {
-        Optional<Brewery> o = breweryService.findOne(id);
-        //long breweryId = o.get().getBrewery_id();
-        //NO METHOD FROM BREWERY WORK HERE!!!!!!!!!!!!!!!!!!
-        //Optional<Brewery> brewery = breweryService.findOne(breweryId);        
+    @GetMapping(value = "/breweryDetails/{breweryId}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<String> getBreweryDetails(@PathVariable long breweryId) {
+        Optional<Brewery> o = breweryService.findOne(breweryId);       
         JSONObject resp = new JSONObject();
         String name = o.get().getName();
         String description = o.get().getDescription();
@@ -312,58 +268,4 @@ public class BreweryController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    //    @GetMapping(value = "/map/{id}", produces = MediaTypes.HAL_JSON_VALUE)
-//    public ResponseEntity<Brewery> getLocation(@PathVariable long id) {
-//        Optional<Brewery> o = breweryService.findOne(id);
-//
-//        String map = "map";
-//        Link link = Link.of("https://www.google.com/maps/place/52.6515619,-8.6651593");
-//        o.get().add(link);
-//        return ResponseEntity.ok(o.get());
-//
-//    }
-//    @GetMapping(value = "/loc/{id}")
-//    public void getLoc(@PathVariable long id) {
-//        //Optional<Brewery> o = breweryService.findOne(id);
-//
-//        JFrame jFrame = new JFrame("Hello World Swing Example");
-//        jFrame.setLayout(new FlowLayout());
-//        jFrame.setSize(500, 360);
-//        jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//
-//
-//        JLabel label = new JLabel("Hello World Swing");
-//        Border border = BorderFactory.createLineBorder(Color.BLACK);
-//        label.setBorder(border);
-//        label.setPreferredSize(new Dimension(150, 100));
-//
-//        label.setText("Hello World Swing");
-//        label.setHorizontalAlignment(JLabel.CENTER);
-//        label.setVerticalAlignment(JLabel.CENTER);
-//
-//        jFrame.add(label);
-//        jFrame.setVisible(true);
-//
-//    }
-//    @GetMapping(value = "/loc/{id}")
-//    public void getLoc(@PathVariable long id) {
-//        //Optional<Brewery> o = breweryService.findOne(id);
-//
-//                JEditorPane editor = new JEditorPane();
-//        editor.setEditable(false);   
-//        try {
-//            editor.setPage("http://www.java2s.com/Code/Java/Swing-JFC/CreateasimplebrowserinSwing.htm");
-//        }catch (IOException e) {
-//            editor.setContentType("https://www.google.com/");
-//            editor.setText("Page could not load");
-//        }
-// 
-//        JScrollPane scrollPane = new JScrollPane(editor);     
-//        JFrame f = new JFrame("Display example.com web page");
-//        f.getContentPane().add(scrollPane);
-//        f.setSize(700,400);
-//        f.setVisible(true);
-//        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//
-//    }
 }

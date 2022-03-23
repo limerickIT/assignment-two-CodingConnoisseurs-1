@@ -91,6 +91,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
+
 /**
  *
  * @author paw
@@ -110,23 +111,23 @@ public class BeerController {
 
     @Autowired
     private StyleService styleService;
-    
-    @Autowired
-  private PagedResourcesAssembler<Beer> pagedResourcesAssembler;
 
-    @GetMapping(value = "/images/{id}/{imageSize}", produces = MediaType.IMAGE_JPEG_VALUE)
-    public ResponseEntity<BufferedImage> getBeerImage(@PathVariable long id, @PathVariable String imageSize) throws IOException {
-        Optional<Beer> o = beerService.findOne(id);
-        String path = "src/main/resources/static/assets/images/" + imageSize + "/" + id + ".jpg";
+    @Autowired
+    private PagedResourcesAssembler<Beer> pagedResourcesAssembler;
+
+    @GetMapping(value = "/beerImage/{beerId}/{imageSize}", produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<BufferedImage> getBeerImage(@PathVariable long beerId, @PathVariable String imageSize) throws IOException {
+        Optional<Beer> o = beerService.findOne(beerId);
+        String path = "src/main/resources/static/assets/images/" + imageSize + "/" + beerId + ".jpg";
         BufferedImage image = ImageIO.read(new File(path));
         return ResponseEntity.ok(image);
 
     }
 
-    //REMOVE SIZE ATTRIBUTE
-    @GetMapping(value = "/pdf/{id}/{imageSize}", produces = MediaType.APPLICATION_PDF_VALUE)
-    public void getPdf(@PathVariable long id, @PathVariable String imageSize) throws FileNotFoundException, DocumentException {
-        Optional<Beer> o = beerService.findOne(id);
+    //REMOVE SIZE ATTRIBUTE?
+    @GetMapping(value = "/pdf/{beerId}/{imageSize}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public void getPdf(@PathVariable long beerId, @PathVariable String imageSize) throws FileNotFoundException, DocumentException {
+        Optional<Beer> o = beerService.findOne(beerId);
 
         Document document = new Document();
         PdfWriter.getInstance(document, new FileOutputStream("src/main/resources/Beer Poster.pdf"));
@@ -161,8 +162,8 @@ public class BeerController {
             Paragraph chunk6 = new Paragraph("Brewery Website: " + website, font);
             Paragraph chunk7 = new Paragraph("Category: " + categoryName, font);
             Paragraph chunk8 = new Paragraph("Style: " + styleName, font);
-            //image
-            String imFile = "src/main/resources/static/assets/images/" + imageSize + "/" + id + ".jpg";
+
+            String imFile = "src/main/resources/static/assets/images/" + imageSize + "/" + beerId + ".jpg";
 
             document.add(chunk1);
             document.add(chunk2);
@@ -175,67 +176,17 @@ public class BeerController {
             Image img;
             try {
                 img = Image.getInstance(imFile);
-//                document.add(new Paragraph("Sample 1: This is simple image demo."));
                 document.add(img);
             } catch (BadElementException ex) {
                 Logger.getLogger(BeerController.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
                 Logger.getLogger(BeerController.class.getName()).log(Level.SEVERE, null, ex);
             }
-
-            //ADD IMAGE
         } else {
             Chunk chunk = new Chunk("No beer with that id", font);
             document.add(chunk);
         }
         document.close();
-
-        //document.addTitle("Beer poster");
-//        String beerName1 = o.get().getName();
-//        Paragraph chunk11 = new Paragraph("Beer Name: " + beerName1, font);
-//        document.add(chunk11);
-//
-//        long breweryId1 = o.get().getBrewery_id();
-//        Optional<Brewery> brewery1 = breweryService.findOne(breweryId1);
-//        String breweryName1 = brewery1.get().getName();
-//        Paragraph chunk14 = new Paragraph("Brewery Name: " + breweryName1, font);
-//        document.add(chunk14);
-//
-//        long catId = o.get().getCat_id();
-//        Optional<Category> cat = categoryService.findOne(catId);
-//
-//        String categoryName = cat.get().getCat_name();
-//        Paragraph chunk7 = new Paragraph("Category: " + categoryName, font);
-//        document.add(chunk7);
-//
-//        long styleId = o.get().getStyle_id();
-//
-//        if (!styleService.findOne(styleId).isPresent()) {
-////            Optional<Style> style = styleService.findOne(styleId);
-////            String styleName = style.get().getStyle_name();
-////            Paragraph chunk8 = new Paragraph("Style: " + styleName, font);
-////            document.add(chunk8);
-//        } else {
-//            Paragraph chunk16 = new Paragraph(" Style: not present", font);
-//            document.add(chunk16);
-//        }
-//
-////        Creating an ImageData object       
-////        String imFile = "C:/itextExamples/logo.jpg";
-////        ImageData data = ImageDataFactory.create(imFile);
-////
-////        // Creating an Image object        
-////        Image image = new Image(data);
-////
-////        // Adding image to the document       
-////        document.add(image);
-//        if (!o.isPresent()) {
-//            Chunk chunk16 = new Chunk("o is present", font);
-//            document.add(chunk16);
-//        } else {
-//            Chunk chunk16 = new Chunk("o is NOT present", font);
-//            document.add(chunk16);
-//        }
     }
 
     @RequestMapping(value = "/zip", produces = "application/zip")
@@ -279,62 +230,23 @@ public class BeerController {
         fis.close();
     }
 
-    @GetMapping(value = "/image", produces = MediaType.IMAGE_JPEG_VALUE)
-    public byte[] getImage() throws IOException {
-//        long id = 1;
-//        Optional<Beer> o = beerService.findOne(id);
-////        String path = "src/main/resources/static.assets.images.large/";
-////        if(type == "thumb"){
-////            path = "src/main/resources/static.assets.images.thumbs/";
-////        }
-//        String path = new ClassPathResource("src/main/resources/static/assets/images/thumbs/1.jpg").toString();
-//        String resource = new ClassPathResource("1.jpg").toString();
-//        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-//        //String path = Thread.currentThread().getContextClassLoader().toString();
-//        System.out.println(path);
-//        InputStream in = classloader.getResourceAsStream("1.jpg");
-//        return IOUtils.toByteArray(in);
-        InputStream in = getClass()
-                .getResourceAsStream("src/main/resources/static/assets/images/thumbs/1.jpg");
-        return IOUtils.toByteArray(in);
-    }
-
-    @RequestMapping(value = "/image2", produces = MediaType.IMAGE_JPEG_VALUE)
-    public ResponseEntity<byte[]> getImage2() throws IOException {
-
-        var imgFile = new ClassPathResource("src/main/resources/static/assets/images/thumbs/1.j");
-        byte[] bytes = StreamUtils.copyToByteArray(imgFile.getInputStream());
-
-        return ResponseEntity
-                .ok()
-                .contentType(MediaType.IMAGE_JPEG)
-                .body(bytes);
-    }
-
-    @GetMapping(value = "/get-image-with-media-type", produces = org.springframework.http.MediaType.IMAGE_JPEG_VALUE)
-    public @ResponseBody
-    byte[] getImageWithMediaType() throws IOException {
-        final InputStream in = getClass().getResourceAsStream("src/main/resources/static/assets/images/thumbs/1.jpg");
-        return IOUtils.toByteArray(in);
-    }
-
-    //@GetMapping(value = "/hateoas/{id}", produces = { "application/hal+json" })
-    @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<Beer> getOneWithHATEOAS(@PathVariable long id) {
-        Optional<Beer> o = beerService.findOne(id);
+    @GetMapping(value = "/{beerId}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<Beer> getOneBeer(@PathVariable long beerId) {
+        Optional<Beer> o = beerService.findOne(beerId);
 
         if (!o.isPresent()) {
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         } else {
             Link selfLink = linkTo(methodOn(BeerController.class)
-                    .getAll()).withRel("allBeers");
+                    .getAllBeers()).withRel("allBeers");
             o.get().add(selfLink);
             return ResponseEntity.ok(o.get());
         }
     }
-    //with Pagination
-    @GetMapping(value = "/allBeers", produces = MediaTypes.HAL_JSON_VALUE)
-    public CollectionModel<Beer> getAllBeers(Pageable pageable) {
+
+    //with Pagination DOES NOT WORK!!!!
+    @GetMapping(value = "/allBeersPagination", produces = MediaTypes.HAL_JSON_VALUE)
+    public CollectionModel<Beer> getAllBeersPagitantion(Pageable pageable) {
         Page<Beer> beerList = (Page<Beer>) beerService.findAll();
         for (final Beer b : beerList) {
             long id = b.getId();
@@ -350,10 +262,10 @@ public class BeerController {
         CollectionModel<Beer> result = CollectionModel.of(beerList, link);
         return result;
     }
-    
-    @GetMapping(value = "/all", produces = MediaTypes.HAL_JSON_VALUE)
-    public CollectionModel<Beer> getAll() {
-        //ADD RESPONSE ENTITY? WHEN LIST IS EMPTY
+
+    @GetMapping(value = "/allBeers", produces = MediaTypes.HAL_JSON_VALUE)
+    public CollectionModel<Beer> getAllBeers() {
+        //add check if empty
         List<Beer> beerList = beerService.findAll();
         for (final Beer b : beerList) {
             long id = b.getId();
@@ -370,9 +282,9 @@ public class BeerController {
     }
 
     //get beer name, desc and brewery name
-    @GetMapping(value = "/details/{id}", produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<String> getBeerDetails(@PathVariable long id) {
-        Optional<Beer> o = beerService.findOne(id);
+    @GetMapping(value = "/beerDetails/{beerId}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<String> getBeerDetails(@PathVariable long beerId) {
+        Optional<Beer> o = beerService.findOne(beerId);
         long breweryId = o.get().getBrewery_id();
         Optional<Brewery> brewery = breweryService.findOne(breweryId);
         JSONObject resp = new JSONObject();
@@ -414,70 +326,6 @@ public class BeerController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @GetMapping("/brewery")
-    public List<Brewery> getAllBreweries() {
-        return breweryService.findAll();
-    }
 
-    //    @GetMapping("")
-//    public List<Beer> getAll() {
-//        return beerService.findAll();
-//    }
-//    @GetMapping("{id}")
-//    public ResponseEntity<Beer> getOne(@PathVariable long id) {
-//        Optional<Beer> o = beerService.findOne(id);
-//
-//        if (!o.isPresent()) {
-//            return new ResponseEntity(HttpStatus.NOT_FOUND);
-//        } else {
-//            return ResponseEntity.ok(o.get());
-//        }
-//    }
-    //    @RequestMapping(value = "/redirect1")
-//    public RedirectView redirect1() {
-//
-////        RedirectView redirectView = new RedirectView();
-////        redirectView.setUrl("https://www.google.com/");
-////
-////        return redirectView;
-//        return new RedirectView("https://www.google.com/");
-//
-//    }
-//
-//    @PostMapping(value = "/redirect")
-//    public ResponseEntity<Void> redirect() {
-//
-//        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create("https://www.google.com/")).build();
-//    }
-    //WORKING WITH ONE FILE
-//    @GetMapping(value = "/zip")
-//    public void getZip() throws IOException {
-//        System.out.println(getClass().getClassLoader().getResource("src/main/resources/static.assets.images.large/1.jpg"));
-//        String sourceFile = "src/main/resources/static/assets/images/large/1.jpg";
-//        FileOutputStream fos = new FileOutputStream("src/main/resources/compressed.zip");
-//        ZipOutputStream zipOut = new ZipOutputStream(fos);
-//        File fileToZip = new File(sourceFile);
-//        FileInputStream fis = new FileInputStream(fileToZip);   //GIVES ERROR
-//        ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
-//        zipOut.putNextEntry(zipEntry);
-//        byte[] bytes = new byte[1024];
-//        int length;
-//        while((length = fis.read(bytes)) >= 0) {
-//            zipOut.write(bytes, 0, length);
-//        }
-//        zipOut.close();
-//        fis.close();
-//        fos.close();
-//
-//    }
-//    @GetMapping(value = "/image", produces = org.springframework.http.MediaType.IMAGE_JPEG_VALUE)
-//    public @ResponseBody
-//    byte[] getImage() throws IOException {
-//
-//        //String path = new ClassPathResource("src/main/resources/static/assets/images/thumbs/1.jpg").toString();
-//        InputStream in = getClass()
-//                .getResourceAsStream("src/main/resources/static/assets/images/thumbs/1.jpg");
-//        return IOUtils.toByteArray(in);
-//
-//    }
+
 }
