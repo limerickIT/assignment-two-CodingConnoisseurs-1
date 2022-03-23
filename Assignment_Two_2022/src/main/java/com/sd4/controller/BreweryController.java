@@ -90,21 +90,33 @@ public class BreweryController {
     @Autowired
     private Breweries_GeocodeService breweries_GeocodeService;
 
-    @GetMapping(path = "/generateQR", produces = MediaType.IMAGE_PNG_VALUE)
-    public BufferedImage generateQR() throws WriterException {
+    @GetMapping(path = "/generateQR/{breweryId}", produces = MediaType.IMAGE_PNG_VALUE)
+    public BufferedImage generateQR(@PathVariable long breweryId) throws WriterException {
+        Optional<Brewery> o = breweryService.findOne(breweryId);
+        String address = "";
+        String name = "";
+        String phoneNo = "";
+        String email = "";
+        String website = "";
+        
+        if (!o.isPresent()) {
+            //breweryAddress = "No brewery with this address exists.";
+        } else {
+            name = o.get().getName();
+            address = o.get().getName() + " " + o.get().getAddress1() + " " + o.get().getAddress2() + " " + o.get().getCity() + " " + o.get().getState() + " " + o.get().getCode() + " " + o.get().getCountry();
+            email = o.get().getEmail();
+            website = o.get().getWebsite();
+            phoneNo = o.get().getPhone();
+        }
+        
         StringBuffer buffer = new StringBuffer();
         buffer.append("BEGIN:VCARD");
-        buffer.append("\nFN:").append("AAAA");
-
-        buffer.append("\nADR;TYPE=pref:").append("Address");
-
+        buffer.append("\nFN:").append(name);
+        buffer.append("\nADR;TYPE=pref:").append(address);
         buffer.append("\nLABEL;TYPE=pref:").append("No");
-
-        buffer.append("\nTEL;TYPE=work:").append("13699998888");
-        buffer.append("\nURL:").append("www.test.com");
-
-        buffer.append("\nEMAIL;TYPE=pref:").append("777777777@qq.com");
-
+        buffer.append("\nTEL;TYPE=work:").append(phoneNo);
+        buffer.append("\nURL:").append(website);
+        buffer.append("\nEMAIL;TYPE=pref:").append(email);
         buffer.append("\nEND:VCARD");
         
         String barcodeText = buffer.toString();
