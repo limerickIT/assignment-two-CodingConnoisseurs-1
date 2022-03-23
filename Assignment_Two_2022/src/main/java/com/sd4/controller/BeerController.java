@@ -104,20 +104,19 @@ public class BeerController {
 
     @Autowired
     private StyleService styleService;
-    
-    @GetMapping(value = "/images", produces = MediaType.IMAGE_JPEG_VALUE)
-    public ResponseEntity<BufferedImage> getBeerImage() throws IOException {
 
-        String path = "src/main/resources/static/assets/images/thumbs/1.jpg"; 
+    @GetMapping(value = "/images/{id}/{imageSize}", produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<BufferedImage> getBeerImage(@PathVariable long id, @PathVariable String imageSize) throws IOException {
+        Optional<Beer> o = beerService.findOne(id);
+        String path = "src/main/resources/static/assets/images/" + imageSize + "/" + id + ".jpg";
         BufferedImage image = ImageIO.read(new File(path));
         return ResponseEntity.ok(image);
 
     }
 
-
     //REMOVE SIZE ATTRIBUTE
-    @GetMapping(value = "/pdf/{id}/{size}", produces = MediaType.APPLICATION_PDF_VALUE)
-    public void getPdf(@PathVariable long id, @PathVariable String size) throws FileNotFoundException, DocumentException {
+    @GetMapping(value = "/pdf/{id}/{imageSize}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public void getPdf(@PathVariable long id, @PathVariable String imageSize) throws FileNotFoundException, DocumentException {
         Optional<Beer> o = beerService.findOne(id);
 
         Document document = new Document();
@@ -154,16 +153,7 @@ public class BeerController {
             Paragraph chunk7 = new Paragraph("Category: " + categoryName, font);
             Paragraph chunk8 = new Paragraph("Style: " + styleName, font);
             //image
-            String imFile = "src/main/resources/static/assets/images/" + size + "/" + id + ".jpg";
-            //String imFile = "src/main/resources/static/assets/images/large/1.jpg";
-//            ImageData data;
-//            try {
-//                data = ImageDataFactory.create(imFile);
-//                Image imageFile = new Image(data);
-//                document.add(imageFile);
-//            } catch (MalformedURLException ex) {
-//                Logger.getLogger(BeerController.class.getName()).log(Level.SEVERE, null, ex);
-//            }
+            String imFile = "src/main/resources/static/assets/images/" + imageSize + "/" + id + ".jpg";
 
             document.add(chunk1);
             document.add(chunk2);
@@ -280,7 +270,6 @@ public class BeerController {
         fis.close();
     }
 
-
     @GetMapping(value = "/image", produces = MediaType.IMAGE_JPEG_VALUE)
     public byte[] getImage() throws IOException {
 //        long id = 1;
@@ -375,7 +364,6 @@ public class BeerController {
         return ResponseEntity.ok(resp.toString());
     }
 
-
     @GetMapping("count")
     public long getCount() {
         return beerService.count();
@@ -403,7 +391,7 @@ public class BeerController {
     public List<Brewery> getAllBreweries() {
         return breweryService.findAll();
     }
-    
+
     //    @GetMapping("")
 //    public List<Beer> getAll() {
 //        return beerService.findAll();
@@ -418,7 +406,6 @@ public class BeerController {
 //            return ResponseEntity.ok(o.get());
 //        }
 //    }
-    
     //    @RequestMapping(value = "/redirect1")
 //    public RedirectView redirect1() {
 //
@@ -435,8 +422,7 @@ public class BeerController {
 //
 //        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create("https://www.google.com/")).build();
 //    }
-    
-        //WORKING WITH ONE FILE
+    //WORKING WITH ONE FILE
 //    @GetMapping(value = "/zip")
 //    public void getZip() throws IOException {
 //        System.out.println(getClass().getClassLoader().getResource("src/main/resources/static.assets.images.large/1.jpg"));
