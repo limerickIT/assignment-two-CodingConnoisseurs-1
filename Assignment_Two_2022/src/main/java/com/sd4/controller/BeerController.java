@@ -46,6 +46,8 @@ import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.validation.Valid;
+
 //pgf imports
 import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.io.RandomAccessFile;
@@ -78,6 +80,8 @@ import java.io.FileOutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.imageio.ImageIO;
@@ -91,13 +95,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  *
  * @author paw
  */
 @RestController
-@RequestMapping("/beers")
+@RequestMapping("/beer")
 public class BeerController {
 
     @Autowired
@@ -314,18 +322,29 @@ public class BeerController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @PostMapping("")
-    public ResponseEntity add(@RequestBody Beer a) {
+    
+    @PostMapping(value = "")
+    public ResponseEntity add(@Valid @RequestBody Beer a) {
         beerService.saveBeer(a);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
     @PutMapping("")
-    public ResponseEntity edit(@RequestBody Beer a) { //the edit method should check if the Author object is already in the DB before attempting to save it.
+    public ResponseEntity edit(@Valid @RequestBody Beer a) { 
         beerService.saveBeer(a);
         return new ResponseEntity(HttpStatus.OK);
     }
 
-
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        return errors;
+    }
 
 }

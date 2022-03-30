@@ -15,6 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,12 +37,16 @@ public class Brewery extends RepresentationModel<Brewery> implements Serializabl
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    
+    @NotBlank(message="Brewery Name cannot be empty")
     private String name;
     private String address1;
     private String address2;
     private String city;
     private String state;
     private String code;
+    
+    @NotBlank(message="Brewery Country cannot be empty")
     private String country;
     private String phone;
     private String website;

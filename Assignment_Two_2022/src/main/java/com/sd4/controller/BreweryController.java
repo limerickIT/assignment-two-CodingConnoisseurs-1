@@ -69,6 +69,13 @@ import com.google.zxing.client.j2se.MatrixToImageConfig;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import java.util.HashMap;
+import java.util.Map;
+import javax.validation.Valid;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  *
@@ -257,15 +264,27 @@ public class BreweryController {
     }
 
     @PostMapping("")
-    public ResponseEntity add(@RequestBody Brewery a) {
+    public ResponseEntity add(@Valid @RequestBody Brewery a) {
         breweryService.saveBrewery(a);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
     @PutMapping("")
-    public ResponseEntity edit(@RequestBody Brewery a) { //the edit method should check if the Author object is already in the DB before attempting to save it.
+    public ResponseEntity edit(@Valid @RequestBody Brewery a) { //the edit method should check if the Author object is already in the DB before attempting to save it.
         breweryService.saveBrewery(a);
         return new ResponseEntity(HttpStatus.OK);
+    }
+    
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        return errors;
     }
 
 }
