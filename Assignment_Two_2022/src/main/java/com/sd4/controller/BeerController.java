@@ -252,6 +252,8 @@ public class BeerController {
         }
     }
 
+    @Autowired
+    private PagedResourcesAssembler<Beer> beerResourcesAssembler;
     //with Pagination DOES NOT WORK!!!!
     @GetMapping(value = "/allBeersPagination", produces = MediaTypes.HAL_JSON_VALUE)
     public CollectionModel<Beer> getAllBeersPagitantion(Pageable pageable) {
@@ -264,7 +266,6 @@ public class BeerController {
                     .getBeerDetails(id)).withRel("beerDetails");
             b.add(beerDetails);
         }
-
         Link link = linkTo(BeerController.class).withSelfRel();
         Page result1 = (Page) CollectionModel.of(beerList, link);
         CollectionModel<Beer> result = CollectionModel.of(beerList, link);
@@ -289,7 +290,7 @@ public class BeerController {
         return result;
     }
 
-    //get beer name, desc and brewery name
+
     @GetMapping(value = "/beerDetails/{beerId}", produces = MediaTypes.HAL_JSON_VALUE)
     public ResponseEntity<String> getBeerDetails(@PathVariable long beerId) {
         Optional<Beer> o = beerService.findOne(beerId);
@@ -307,7 +308,7 @@ public class BeerController {
         } catch (JSONException ex) {
             Logger.getLogger(BeerController.class.getName()).log(Level.SEVERE, null, ex);
         }
-        //String details = "Name: " + o.get().getName() + " Description: " + o.get().getDescription();
+        
         return ResponseEntity.ok(resp.toString());
     }
 
@@ -323,7 +324,7 @@ public class BeerController {
     }
 
     
-    @PostMapping(value = "")
+    @PostMapping(value = "", consumes = "application/json")
     public ResponseEntity add(@Valid @RequestBody Beer a) {
         beerService.saveBeer(a);
         return new ResponseEntity(HttpStatus.CREATED);

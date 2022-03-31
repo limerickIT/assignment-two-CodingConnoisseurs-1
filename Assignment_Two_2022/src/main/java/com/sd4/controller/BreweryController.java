@@ -81,7 +81,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  *
  * @author paw
  */
-//CHANGE TO SOMETHING DIFFERENT FROM BEER CONTROLLER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+
 @RestController
 @RequestMapping("/brewery")
 public class BreweryController {
@@ -159,14 +159,6 @@ public class BreweryController {
 
     }
 
-    @RequestMapping(value = "/redirectMap")
-    public RedirectView mapRedirectView() {
-
-        RedirectView redirectView = new RedirectView("https://www.google.com/maps/place/52.6515619,-8.6651593");
-
-        return redirectView;
-
-    }
 
     @GetMapping(value = "/{breweryId}", produces = MediaTypes.HAL_JSON_VALUE)
     public ResponseEntity<Brewery> getOneBrewery(@PathVariable long breweryId) {
